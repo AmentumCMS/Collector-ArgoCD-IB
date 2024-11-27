@@ -1,4 +1,4 @@
-name: COLLECTOR IB Collector (Branch)
+name: ArgoCD IB Collector (Branch)
 run-name: ${{ github.actor }} is Collecting a Branch! 🚀
 on:
   push:
