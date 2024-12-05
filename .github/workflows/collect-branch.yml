@@ -47,6 +47,8 @@ jobs:
           cd ${{ vars.COLLECTOR }}
           helm repo add argo https://argoproj.github.io/argo-helm
           helm pull argo/argo-cd
+          helm plugin install https://github.com/nikhilsbhat/helm-images
+          helm images get argo-cd
 
       - name: Directory Contents
         run: |
