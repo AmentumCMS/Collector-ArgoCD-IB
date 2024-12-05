@@ -39,6 +39,11 @@ jobs:
         run: |
           skopeo login registry1.dso.mil -u ${{ secrets.REGISTRY_USER }} -p ${{ secrets.REGISTRY_TOKEN }}
 
+      - name: Run Skopeo Sync
+        run: |
+          skopeo sync --scoped \
+              --src yaml --dest dir ${{ vars.COLLECTOR }}.yml ${{ vars.COLLECTOR }}
+
       - name: Grab helm
         run: |
           cd ${{ vars.COLLECTOR }}
@@ -49,11 +54,6 @@ jobs:
           helm plugin install https://github.com/nikhilsbhat/helm-images
           echo -e "\nImages listed in chart"
           helm images get argo/argo-cd
-
-      - name: Run Skopeo Sync
-        run: |
-          skopeo sync --scoped \
-              --src yaml --dest dir ${{ vars.COLLECTOR }}.yml ${{ vars.COLLECTOR }}
 
       - name: Directory Contents
         run: |
