@@ -2,3 +2,10 @@ registry1.dso.mil:
     images-by-tag-regex:
         ironbank/opensource/argoproj/argocd: v2.13.1
         ironbank/opensource/argoproj/argocli: v3.6.0
+quay.io:
+    images-by-tag-regex:
+        argoproj/argocd/argo-repo-server: latest
+        argoproj/argocd/argo-application-controller: latest
+ghcr.io:
+    images-by-tag-regex:
+        dexidp/dex: v2.41.1

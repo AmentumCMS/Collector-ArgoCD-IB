@@ -24,6 +24,8 @@ jobs:
   Skopeo:
     needs: [Date]
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -31,7 +33,7 @@ jobs:
       - name: Install Skopeo
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y skopeo pigz
+          sudo apt-get install -y skopeo pigz helm
 
       - name: DSO Login
         run: |
@@ -39,8 +41,14 @@ jobs:
 
       - name: Run Skopeo Sync
         run: |
-          skopeo sync \
+          skopeo sync --scoped \
               --src yaml --dest dir ${{ vars.COLLECTOR }}.yml ${{ vars.COLLECTOR }}
+
+      - name: Grab helm
+        run: |
+          cd ${{ vars.COLLECTOR }}
+          helm repo add argo https://argoproj.github.io/argo-helm
+          helm pull argo/argo-cd
 
       - name: Directory Contents
         run: |
