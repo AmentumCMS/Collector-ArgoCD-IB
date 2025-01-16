@@ -10,7 +10,7 @@ on:
 
 jobs:
   Date:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       Date: ${{ steps.date.outputs.date }}
     steps:
@@ -23,7 +23,7 @@ jobs:
 
   Skopeo:
     needs: [Date]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -76,7 +76,7 @@ jobs:
 
   Code:
     needs: [Date]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -102,7 +102,7 @@ jobs:
           path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle
 
   MakeISO:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [Date, Code, Skopeo]
     permissions:
       contents: write
@@ -169,7 +169,7 @@ jobs:
           path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso.sha
 
   Release:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [Date, MakeISO]
     permissions:
       contents: write
@@ -213,7 +213,7 @@ jobs:
             ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso*
 
   Sharepoint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [Date, MakeISO]
     permissions:
       contents: write
