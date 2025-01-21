@@ -158,6 +158,12 @@ jobs:
         with:
           merge-multiple: true
 
+      - name: Pull helm chart
+        run: |
+          mkdir helmchart
+          cd helmchart
+          helm pull https://argoproj.github.io/argo-helm/argo/argo-cd
+
       - name: Show Artifacts
         run: ls -Alh ${{ vars.COLLECTOR }}-*.*
 
@@ -190,7 +196,7 @@ jobs:
             -V '${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}' \
             -A '${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}' \
             -o ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso \
-            ${{ vars.COLLECTOR }}-*.* *.md
+            ${{ vars.COLLECTOR }}-*.* helmchart *.md
 
       - name: Implant MD5 sum into iso
         run: implantisomd5 ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso
