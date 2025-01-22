@@ -50,7 +50,8 @@ jobs:
 
       - name: Grab helm
         run: |
-          cd ${{ vars.COLLECTOR }}
+          mkdir -p helmchart
+          cd helmchart
           echo -e "\nSet repo and pull chart"
           helm repo add argo https://argoproj.github.io/argo-helm
           helm pull argo/argo-cd
@@ -63,7 +64,7 @@ jobs:
         run: |
           echo "Directory Contents"
           ls -lAhS *
-          echo -e "\nDirectory Size"
+          echo -e "\n\nDirectory Size"
           du -hd1 
 
       - name: TARchive Skopeo Output
@@ -117,7 +118,7 @@ jobs:
       - name: Bundle Repo1 code base for ${{ vars.COLLECTOR }}
         run: |
           git bundle create --progress ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle --all
-          echo -e "\nDirectory Listing $(ls -Alht *)"
+          echo -e "\nDirectory Listing\n$(ls -Alht *)"
 
       - name: Generate Hash
         run: |
@@ -163,9 +164,11 @@ jobs:
           mkdir helmchart
           cd helmchart
           helm pull https://argoproj.github.io/argo-helm/argo/argo-cd
+          sha256sum -b * \
+          | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm.sha
 
       - name: Show Artifacts
-        run: ls -Alh ${{ vars.COLLECTOR }}-*.*
+        run: ls -Alht *
 
       - name: Generate Artifact Hash File
         run: |
@@ -180,7 +183,7 @@ jobs:
 
       - name: ISO Table of contents
         run: |
-          tree -a ${{ vars.COLLECTOR }} \
+          tree -a \
             | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso.txt
 
       - name: Upload iso ToC artifact
