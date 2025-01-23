@@ -183,7 +183,7 @@ jobs:
         run: |
           cd ${{ vars.COLLECTOR }}
           sha256sum -b *.* | tee \
-          ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.sha
+            ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.sha
 
       - name: Upload Artifact Hash File
         uses: actions/upload-artifact@v4
