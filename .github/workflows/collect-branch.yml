@@ -48,16 +48,17 @@ jobs:
             ${{ vars.COLLECTOR }}.yml \
             ${{ vars.COLLECTOR }}
 
-      - name: Grab helm
-        run: |
-          mkdir -p helmchart
-          cd helmchart
-          echo -e "\nPull chart"
-          helm pull https://argoproj.github.io/argo-helm/argo-cd
-          echo -e "\nInstall helm images plugin"
-          helm plugin install https://github.com/nikhilsbhat/helm-images
-          echo -e "\nImages listed in chart"
-          helm images get https://argoproj.github.io/argo-helm/argo-cd
+            - name: Grab helm
+            run: |
+              mkdir -p helmchart
+              cd helmchart
+              echo -e "\nSet repo and pull chart"
+              helm repo add argo https://argoproj.github.io/argo-helm
+              helm pull argo/argo-cd
+              echo -e "\nInstall helm images plugin"
+              helm plugin install https://github.com/nikhilsbhat/helm-images
+              echo -e "\nImages listed in chart"
+              helm images get argo/argo-cd
 
       - name: Directory Contents
         run: |
