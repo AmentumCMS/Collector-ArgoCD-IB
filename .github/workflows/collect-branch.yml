@@ -57,12 +57,12 @@ jobs:
           helm pull argo/argo-cd
           echo -e "\nInstall helm images plugin"
           helm plugin install https://github.com/nikhilsbhat/helm-images > /dev/null 2>&1
-          echo -e "\nImages listed in chart"
+          echo -e "\n\nImages listed in chart"
           helm images get argo/argo-cd
-          echo -e "\nHash chart"
+          echo -e "\n\nHelmchart Hash "
           sha256sum -b * \
           | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm.sha
-          echo -e "\nList files: $(pwd;ls -1SSh)"
+          echo -e "\n\nList files: $(pwd;ls -1SSh)"
 
       - name: Upload Helmchart
         uses: actions/upload-artifact@v4
