@@ -62,7 +62,14 @@ jobs:
           echo -e "\nHash chart"
           sha256sum -b * \
           | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm.sha
-          echo -e "\nList files: $(ls -1SSh)"
+          echo -e "\nList files: $(pwd;ls -1SSh)"
+
+      - name: Upload Helmchart
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm
+          path: ${{ vars.COLLECTOR }}/helmchart/*
+          if-no-files-found: error
 
       - name: Directory Contents
         run: |
@@ -104,13 +111,6 @@ jobs:
           path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.txt
           if-no-files-found: error
 
-      - name: Upload Helmchart
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm
-          path: ${{ vars.COLLECTOR }}/helmchart/*
-          if-no-files-found: error
-  
   Code:
     needs: [Date]
     runs-on: ubuntu-24.04
@@ -185,11 +185,13 @@ jobs:
           helm repo add argo https://argoproj.github.io/argo-helm
           helm pull argo/argo-cd
           echo -e "\nInstall helm images plugin"
-          helm plugin install https://github.com/nikhilsbhat/helm-images
+          helm plugin install https://github.com/nikhilsbhat/helm-images > /dev/null 2>&1
           echo -e "\nImages listed in chart"
           helm images get argo/argo-cd
+          echo -e "\nHash chart"
           sha256sum -b * \
           | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm.sha
+          echo -e "\nList files:\n$(ls -1SSh)"
 
       - name: Show Artifacts
         run: ls -Alht ${{ vars.COLLECTOR }}
