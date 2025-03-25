@@ -59,7 +59,7 @@ jobs:
           cd ${{ vars.COLLECTOR }}/helmchart
           echo -e "\nSet repo and pull chart"
           helm repo add $HELM_REPO $HELM_URL
-          helm pull $HELM_NAME/$HELM_NAME
+          helm pull $HELM_REPO/$HELM_NAME
           echo -e "\nInstall helm images plugin"
           helm plugin install https://github.com/nikhilsbhat/helm-images > /dev/null 2>&1
           echo -e "\nImages listed in chart"
@@ -187,7 +187,7 @@ jobs:
           cd ${{ vars.COLLECTOR }}/helmchart
           echo -e "\nSet repo and pull chart"
           helm repo add $HELM_REPO $HELM_URL
-          helm pull $HELM_NAME/$HELM_NAME
+          helm pull $HELM_REPO/$HELM_NAME
           echo -e "\nInstall helm images plugin"
           helm plugin install https://github.com/nikhilsbhat/helm-images > /dev/null 2>&1
           echo -e "\nImages listed in chart"
