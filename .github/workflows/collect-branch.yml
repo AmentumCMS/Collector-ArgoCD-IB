@@ -64,13 +64,6 @@ jobs:
           | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm.sha
           echo -e "\n\nList files: $(pwd;ls -1SSh)"
 
-      - name: Upload Helmchart
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm
-          path: ${{ vars.COLLECTOR }}/helmchart/*
-          if-no-files-found: error
-
       - name: Directory Contents
         run: |
           echo -e "Directory Contents\n$(ls -lAhS *)"
@@ -193,6 +186,13 @@ jobs:
           | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm.sha
           echo -e "\nList files:\n$(ls -1SSh)"
 
+      - name: Upload Helmchart
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm
+          path: ${{ vars.COLLECTOR }}/helmchart/*
+          if-no-files-found: error
+  
       - name: Show Artifacts
         run: ls -Alht ${{ vars.COLLECTOR }}
 
