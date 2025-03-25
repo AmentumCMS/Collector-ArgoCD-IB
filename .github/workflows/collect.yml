@@ -52,19 +52,22 @@ jobs:
 
       - name: Grab helm
         run: |
+          HELM_URL="https://argoproj.github.io/argo-helm"
+          HELM_REPO="argo"
+          HELM_NAME="argo-cd"
           mkdir -p ${{ vars.COLLECTOR }}/helmchart
           cd ${{ vars.COLLECTOR }}/helmchart
           echo -e "\nSet repo and pull chart"
-          helm repo add argo https://argoproj.github.io/argo-helm
-          helm pull argo/argo-cd
+          helm repo add $HELM_REPO $HELM_URL
+          helm pull $HELM_NAME/$HELM_NAME
           echo -e "\nInstall helm images plugin"
           helm plugin install https://github.com/nikhilsbhat/helm-images > /dev/null 2>&1
-          echo -e "\n\nImages listed in chart"
-          helm images get argo/argo-cd
+          echo -e "\nImages listed in chart"
+          helm images get $HELM_REPO/$HELM_NAME
           echo -e "\n\nHelmchart Hash "
           sha256sum -b * \
           | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm.sha
-          echo -e "\n\nList files: $(pwd;ls -1SSh)"
+          echo -e "\n\nList files:\n$(pwd;ls -1SSh)"
 
       - name: Directory Contents
         run: |
@@ -83,7 +86,7 @@ jobs:
             ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.sha
  
       - name: List files 
-        run: ls -Alh ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz*
+        run: ls -Alht ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz*
 
       - name: Upload TARchive
         uses: actions/upload-artifact@v4
@@ -112,6 +115,9 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: true
 
       - name: Setup Git
         run: |
@@ -174,19 +180,22 @@ jobs:
 
       - name: Pull helm chart
         run: |
+          HELM_URL="https://argoproj.github.io/argo-helm"
+          HELM_REPO="argo"
+          HELM_NAME="argo-cd"
           mkdir -p ${{ vars.COLLECTOR }}/helmchart
           cd ${{ vars.COLLECTOR }}/helmchart
           echo -e "\nSet repo and pull chart"
-          helm repo add argo https://argoproj.github.io/argo-helm
-          helm pull argo/argo-cd
+          helm repo add $HELM_REPO $HELM_URL
+          helm pull $HELM_NAME/$HELM_NAME
           echo -e "\nInstall helm images plugin"
           helm plugin install https://github.com/nikhilsbhat/helm-images > /dev/null 2>&1
           echo -e "\nImages listed in chart"
-          helm images get argo/argo-cd
-          echo -e "\nHash chart"
+          helm images get $HELM_REPO/$HELM_NAME
+          echo -e "\n\nHelmchart Hash "
           sha256sum -b * \
           | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm.sha
-          echo -e "\nList files:\n$(ls -1SSh)"
+          echo -e "\n\nList files:\n$(pwd;ls -1SSh)"
 
       - name: Upload Helmchart
         uses: actions/upload-artifact@v4
@@ -240,7 +249,7 @@ jobs:
           | tee ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso.sha
 
       - name: Show ISO & Hash
-        run: ls -Alh *.iso*
+        run: ls -Alht *.iso*
 
       - name: Upload ISO
         uses: actions/upload-artifact@v4
@@ -272,7 +281,9 @@ jobs:
           merge-multiple: true
 
       - name: Show Artifacts
-        run: ls -Alh ${{ vars.COLLECTOR }}-*.*
+        run: ls -Alht ${{ vars.COLLECTOR }}-*.*
+
+      # Create Release
 
       - name: Set up git
         run: |
@@ -311,7 +322,9 @@ jobs:
           merge-multiple: true
 
       - name: Show Artifacts
-        run: ls -Alh ${{ vars.COLLECTOR }}-*.*
+        run: ls -Alht ${{ vars.COLLECTOR }}-*.*
+
+      # Upload files to Sharepoint
 
       - name: Send Files to Sharepoint
         uses: amentumcms/sharepoint-file-upload-action@main
