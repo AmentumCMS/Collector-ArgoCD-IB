@@ -1,0 +1,9 @@
+[submodule "argocd-ib-source"]
+	path = argocd-ib-source
+	url = https://repo1.dso.mil/dsop/opensource/argoproj/argocd.git
+[submodule "argocd-cli-ib-source"]
+	path = argocd-cli-ib-source
+	url = https://repo1.dso.mil/dsop/opensource/argoproj/argocli.git
+[submodule "dex-gh-source"]
+	path = dex-gh-source
+	url = https://github.com/dexidp/dex.git
