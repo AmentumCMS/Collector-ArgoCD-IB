@@ -143,7 +143,7 @@ jobs:
       - name: TARCHIVE Repo1 code base for ${{ vars.COLLECTOR }}
         run: |
           tar -cvC .. \
-            -f ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz Collector-* \
+            -f ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz $(basename ${{ github.WORKSPACE }}) \
             | tee ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz.txt
 
       - name: Generate TARchive Hash
