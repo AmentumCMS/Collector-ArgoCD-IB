@@ -86,30 +86,19 @@ jobs:
       - name: List files 
         run: ls -Alht ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz*
 
-      - name: Upload TARchive
+      - name: Upload TARchive, ToC, and hash
         uses: actions/upload-artifact@v4
         with:
           name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz
-          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz
-          if-no-files-found: error
-
-      - name: Upload TARchive SHA
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.sha
-          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.sha
-          if-no-files-found: error
-
-      - name: Upload TARchive ToC
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.txt
-          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz.txt
+          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.tgz*
           if-no-files-found: error
 
   Code:
     needs: [Date]
     runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -124,30 +113,52 @@ jobs:
 
       - name: Update Submodules if needed
         shell: bash
-        run: git submodule update --init --recursive --remote
+        run: |
+          git submodule update --init --recursive --remote
+          set +e
+          git commit -am "Update Submodules"
+          if [ $? -eq 1 ];then
+            echo "No push required"
+          else
+            git push
+          fi
 
       - name: Bundle Repo1 code base for ${{ vars.COLLECTOR }}
         run: |
           git bundle create --progress ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle --all
-          echo -e "\nDirectory Listing\n$(ls -Alht *)"
+          echo -e "\nDirectory Listing\n$(ls -1sht *)"
 
-      - name: Generate Hash
+      - name: Generate Bundle Hash
         run: |
           sha256sum -b ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle | tee \
             ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle.sha
 
-      - name: Upload bundle
+      - name: Upload bundle and hash
         uses: actions/upload-artifact@v4
         with:
           name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle
-          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle
+          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle*
           if-no-files-found: error
 
-      - name: Upload bundle hash
+      - name: TARCHIVE Repo1 code base for ${{ vars.COLLECTOR }}
+        run: |
+          tar -cvC .. \
+            -f ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz $(basename ${{ github.WORKSPACE }}) \
+            | tee ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz.txt
+
+      - name: Generate TARchive Hash
+        run: |
+          sha256sum -b ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz | tee \
+            ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz.sha
+
+      - name: Directory Listing
+        run: echo -e "\nDirectory Listing for $PWD\n$(ls -1Ssh)"
+
+      - name: Upload Tarchive, ToC, and hash
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle.sha
-          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.bundle.sha
+          name: ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz
+          path: ${{ vars.COLLECTOR }}-code-${{ needs.Date.outputs.Date }}.tgz*
           if-no-files-found: error
 
   MakeISO:
@@ -201,7 +212,7 @@ jobs:
           name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm
           path: ${{ vars.COLLECTOR }}/helmchart/*
           if-no-files-found: error
-  
+
       - name: Show Artifacts
         run: ls -Alht ${{ vars.COLLECTOR }}
 
@@ -249,18 +260,11 @@ jobs:
       - name: Show ISO & Hash
         run: ls -Alht *.iso*
 
-      - name: Upload ISO
+      - name: Upload ISO, ToC, and hash
         uses: actions/upload-artifact@v4
         with:
           name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso
-          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso
-          if-no-files-found: error
-
-      - name: Upload ISO Hash
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso.sha
-          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso.sha
+          path: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.iso*
           if-no-files-found: error
 
   Release:
