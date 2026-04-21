@@ -467,7 +467,7 @@ jobs:
           sudo apt-get install -y mkisofs isomd5sum wget
 
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           merge-multiple: true
           path: ${{ vars.COLLECTOR }}
@@ -498,7 +498,7 @@ jobs:
           echo -e "\n\nList files:\n$(pwd;ls -1SSh)"
 
       - name: Upload Helmchart
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm
           path: ${{ vars.COLLECTOR }}/helmchart/*
