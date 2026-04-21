@@ -1,0 +1,78 @@
+name: Update Container Versions
+on:
+  workflow_dispatch: # Manual trigger only
+
+jobs:
+  update-yaml:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write # Required to create PRs
+    
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          # We check out develop because that is where the 
+          # "latest" dev work lives that we want to bump.
+          ref: develop 
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y skopeo jq
+          sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+          sudo chmod +x /usr/bin/yq
+
+      - name: Update YAML tags
+        env:
+          YAML_FILE: "${{ vars.COLLECTOR }}.yml"
+          REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+          REGISTRY: "registry1.dso.mil"
+        run: |
+          skopeo login "$REGISTRY" -u "$REGISTRY_USER" -p "$REGISTRY_TOKEN"
+          IMAGES=$(yq eval '.["registry1.dso.mil"]["images-by-tag-regex"] | keys | .[]' "$YAML_FILE")
+
+          for IMAGE in $IMAGES; do
+            echo "🔍 Checking $REGISTRY/$IMAGE..."
+            LATEST_TAG=$(skopeo list-tags "docker://$REGISTRY/$IMAGE" | jq -r '.Tags[]' | \
+              grep -E '^[0-9.]+$' | sort -V | tail -n 1)
+
+            if [ -n "$LATEST_TAG" ] && [ "$LATEST_TAG" != "null" ]; then
+              NEW_VALUE="^${LATEST_TAG}$"
+              yq eval ".[\"registry1.dso.mil\"][\"images-by-tag-regex\"].\"$IMAGE\" = \"$NEW_VALUE\"" -i "$YAML_FILE"
+            fi
+          done
+
+      - name: Create Pull Request to Main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # Branch naming convention to track the bump
+          BRANCH_NAME: "version-bump-develop-to-main-${{ github.run_id }}"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if git diff --quiet "${{ vars.COLLECTOR }}.yml"; then
+            echo "No version changes detected. Skipping PR."
+            exit 0
+          fi
+
+          # 1. Commit the changes to a new branch based on the updated develop
+          git checkout -b "$BRANCH_NAME"
+          git add "${{ vars.COLLECTOR }}.yml"
+          git commit -m "chore: bump container versions for main release"
+          git push origin "$BRANCH_NAME"
+
+          # 2. Use gh CLI to create the PR: Source (head) -> Destination (base)
+          # We set --base to main
+          gh pr create \
+            --title "🚀 Release: Version Bump develop -> main (${{ vars.COLLECTOR }})" \
+            --body "This PR was automatically generated to bump container versions in ${{ vars.COLLECTOR }}.yml from the latest available in Iron Bank. 
+            
+            **Source:** develop
+            **Target:** main
+            **Triggered by:** @${{ github.actor }}" \
+            --base main \
+            --head "$BRANCH_NAME"
