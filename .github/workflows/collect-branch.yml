@@ -498,7 +498,7 @@ jobs:
           echo -e "\n\nList files:\n$(pwd;ls -1SSh)"
 
       - name: Upload Helmchart
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ vars.COLLECTOR }}-${{ needs.Date.outputs.Date }}.helm
           path: ${{ vars.COLLECTOR }}/helmchart/*
