@@ -11,7 +11,7 @@ jobs:
     
     steps:
       - name: Check out code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           ref: develop 
 
@@ -27,6 +27,8 @@ jobs:
           YAML_FILE: "${{ vars.COLLECTOR }}.yml"
           REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+          REDHAT_USER: ${{ secrets.REDHAT_USER }}
+          REDHAT_TOKEN: ${{ secrets.REDHAT_PASS }}
         run: |
           # 1. Iterate through all top-level registries in the YAML
           REGISTRIES=$(yq eval 'keys | .[]' "$YAML_FILE")
@@ -38,6 +40,9 @@ jobs:
             if [[ "$REGISTRY" == "registry1.dso.mil" ]]; then
               echo "🔑 Logging into Iron Bank..."
               skopeo login "$REGISTRY" -u "$REGISTRY_USER" -p "$REGISTRY_TOKEN"
+            elif [[ "$REGISTRY" == "registry.redhat.io" ]]; then
+              echo "🔑 Logging into Red Hat..."
+              skopeo login "$REGISTRY" -u "$REDHAT_USER" -p "$REDHAT_TOKEN"
             else
               echo "🔓 Skipping login for $REGISTRY (Public/GHCR)"
             fi
@@ -78,7 +83,6 @@ jobs:
       - name: Create Pull Request to Main
         env:
           GH_TOKEN: ${{ github.token }}
-          BRANCH_NAME: "version-bump-develop-to-main-${{ github.run_id }}"
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -88,10 +92,9 @@ jobs:
             exit 0
           fi
 
-          git checkout -b "$BRANCH_NAME"
           git add "${{ vars.COLLECTOR }}.yml"
           git commit -m "chore: bump container versions for main release"
-          git push origin "$BRANCH_NAME"
+          git push origin develop
 
           gh pr create \
             --title "🚀 Release: Version Bump develop -> main (${{ vars.COLLECTOR }})" \
@@ -99,4 +102,4 @@ jobs:
             
             **Triggered by:** @${{ github.actor }}" \
             --base main \
-            --head "$BRANCH_NAME"
+            --head develop
