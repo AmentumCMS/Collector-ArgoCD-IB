@@ -72,7 +72,7 @@ jobs:
 
       - name: Directory Contents
         run: |
-          echo -e "Directory Contents\n$(ls -lAhS *)"
+          echo -e "Directory Contents\n$(ls -1Ssh *)"
           echo -e "\n\nDirectory Size\n$(du -hd1)"
 
       - name: TARchive Skopeo Output
@@ -582,4 +582,3 @@ jobs:
         run: ls -Alht ${{ vars.COLLECTOR }}-*.*
 
       # Upload files to Sharepoint
-

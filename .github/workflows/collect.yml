@@ -53,7 +53,7 @@ jobs:
             ${{ vars.COLLECTOR }}.yml \
             ${{ vars.COLLECTOR }}
 
-      - name: Grab helm
+      - name: Grab helmchart
         run: |
           HELM_URL="https://argoproj.github.io/argo-helm"
           HELM_REPO="argo"
@@ -74,7 +74,7 @@ jobs:
 
       - name: Directory Contents
         run: |
-          echo -e "Directory Contents\n$(ls -lAhS *)"
+          echo -e "Directory Contents\n$(ls -1Ssh *)"
           echo -e "\n\nDirectory Size\n$(du -hd1)"
 
       - name: TARchive Skopeo Output
